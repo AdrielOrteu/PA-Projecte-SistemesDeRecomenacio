@@ -4,9 +4,10 @@ import typing
 
 class Ratings:
     
-    def __init__(self, users):
+    def __init__(self, users, contents):
         self._users = users
-        # self._ratings_table = "a"
+        self._contents = contents
+#        self._ratings_table = "a"
     
     def simple_recommendation(self):
         pass
