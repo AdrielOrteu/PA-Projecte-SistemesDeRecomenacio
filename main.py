@@ -23,8 +23,7 @@ def load_users(u):
 def load_movies(m):
     movies = pd.read_csv("movies/movies.csv")
     for row in movies.itertuples(index=False, name='Pandas'):
-        print(f"id: {row.movieId}, title: {row.title}, genres:{row.genres}")
-        print("#####")
-    # m.append(Content(id=identifier, title=titol, genres=generes) )
+        m.append(Content(id=row.movieId, title=row.title, genres=row.genres))
+
 
 load_movies(users)

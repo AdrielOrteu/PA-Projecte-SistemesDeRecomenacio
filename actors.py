@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+
 class User:
     
     def __init__(self, id):
@@ -25,3 +27,22 @@ class Content:
     def actualize_rating(self):
         pass
     
+    @property
+    def id(self):
+        return self._id
+    
+    @property
+    def rating(self):
+        return self._rating
+    
+    @property
+    def title(self):
+        return self._title
+    
+    def get_characteristic(self, characteristic):
+        try:
+            return self._characteristics[characteristic]
+        except KeyError:
+            return None
+
+
