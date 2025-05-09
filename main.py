@@ -1,4 +1,5 @@
 import pandas as pd
+import tkinter as tk # DO LAST
 from rating_sistem import Ratings
 from actors import User, Content
 import numpy as np
@@ -17,14 +18,13 @@ def load_users(u):
             tmp_lst.append(identifier)
 
 def load_user_ratings(u):
-    print(u)
+#    print(u)
     ratings = pd.read_csv("movies/ratings.csv")
     for i, id in enumerate(ratings["userId"]):
         for user in u:
-            #print(id, user.id)
             if user.id == id:
                 user.rate_content(content=ratings.iloc[i, 1], rating=ratings.iloc[i, 2])
-                print(user.ratings)
+                #print(user.ratings)
 
 
 def load_movies(m):
@@ -34,4 +34,7 @@ def load_movies(m):
 
 load_users(users)
 load_user_ratings(users)
-print(np.int64(170875))
+#print(np.int64(170875))
+print(f"{users[0].ratings}")
+
+

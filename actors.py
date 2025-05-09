@@ -44,9 +44,6 @@ class Content:
         return self._title
     
     def get_characteristic(self, characteristic):
-        try:
-            return self._characteristics[characteristic]
-        except KeyError:
-            return None
+        return self._characteristics.get(characteristic, None)
 
 
