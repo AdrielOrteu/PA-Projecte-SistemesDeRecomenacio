@@ -6,14 +6,14 @@ class Ratings:
     
     def __init__(self, users, contents):
         self._users = {user.id: user for user in users}
-        self._contents = contents
+        self._contents = {content.id: content for content in contents}
 #        self._ratings_table = "a"
     
     def simple_recommendation(self):
         pass
     
-    def user_based_recommendation(self, my_id, k):
-        def compute_vectors(user_1: User, user_2: User):
+    def user_based_recommendation(self, my_id, k, num_recommendations=1):
+        def compute_restricted_u_vectors(user_1: User, user_2: User):
             if not isinstance(user_1, User) or not isinstance(user_2, User):
                 raise TypeError("Both arguments must be instances of User")
             
@@ -26,10 +26,15 @@ class Ratings:
             
             return v1, v2
         
-        k_nearest = np.zeros((2,k))
+        def compute_full_u_vector(user_1: User):
+            if not isinstance(user_1, User):
+                raise TypeError("Both arguments must be instances of User")
+            return np.array([user_1.ratings.get(key,0) for key in user_1.ratings])
+        
+        k_nearest = np.zeros((3,k))
         for user_id in self._users:
             if user_id != my_id:
-                u1_vector, u2_vector = compute_vectors(self._users[my_id], self._users[user_id])
+                u1_vector, u2_vector = compute_restricted_u_vectors(self._users[my_id], self._users[user_id])
                 s = np.dot(u1_vector, u2_vector)/(np.linalg.norm(u1_vector)*np.linalg.norm(u2_vector))
                 
                 if s > k_nearest[0, 0]:
@@ -37,6 +42,16 @@ class Ratings:
                     k_nearest[0, 1] = user_id
                     k_nearest = k_nearest[np.argsort(k_nearest[:, 0])]
         
+        k_nearest_ratings = np.stack([compute_full_u_vector(u) for u in k_nearest]) # THIS
+        best_content = np.zeros((2,num_recommendations))
+        denominator = np.linalg.norm(k_nearest[:, 0], ord=1)
+        for content_id in self._contents:
+            y = np.fromiter((np.mean(v) for v in k_nearest_ratings[0, :]), dtype=float)
+            numerator = np.dot(k_nearest, k_nearest_ratings[:, ]-y)
+            
+            if x < best_content[0, 0]:
+                best_content[0, 0] = x
+                best_content[0, 1] = content_id
         
     
     def content_based_recommendation(self):

@@ -32,9 +32,9 @@ def load_movies(m):
     for row in movies.itertuples(index=False, name='Pandas'):
         m.append(Content(id=row.movieId, title=row.title, genres=row.genres))
 
-load_users(users)
-load_user_ratings(users)
+#load_users(users)
+#load_user_ratings(users)
 #print(np.int64(170875))
-print(f"{users[0].ratings}")
+#print(f"{users[0].ratings}")
 
 
