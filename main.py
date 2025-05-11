@@ -1,6 +1,6 @@
 import pandas as pd
-import tkinter as tk # DO LAST
-from rating_sistem import Ratings
+from tkinter import * # DO LAST
+from rating_sistem import Ratings, WindowManager
 from actors import User, Content
 import numpy as np
 
@@ -32,9 +32,17 @@ def load_movies(m):
     for row in movies.itertuples(index=False, name='Pandas'):
         m.append(Content(id=row.movieId, title=row.title, genres=row.genres))
 
-#load_users(users)
-#load_user_ratings(users)
-#print(np.int64(170875))
-#print(f"{users[0].ratings}")
+load_users(users)
+load_movies(content)
+load_user_ratings(users)
 
+recommender = Ratings(users=users, contents=content)
 
+print(recommender.user_based_recommendation(my_id=4, k=5))
+
+#main_window = Tk()
+#main_window.title("entertainment recommendations")
+#main_window.state("zoomed")
+#main_window.config(bg="white")
+#
+#main_window.mainloop()
