@@ -5,6 +5,8 @@ from actors import User, Content
 import numpy as np
 
 
+users = []
+content = []
 
 def load_users(u):
     ratings = pd.read_csv("movies/ratings.csv")
@@ -29,24 +31,25 @@ def load_users(u):
 
 #print(recommender.user_based_recommendation(my_id=1, k=10))
 
-main_window = Tk()
-main_window.title("entertainment recommendations")
-main_window.state("zoomed")
-main_window.config(bg="white")
-
-gui_display = WindowManager(root_window=main_window)
-
-
-def x(event) -> str:
-    selected_item = event.widget.get()
-    print(f"Selected item: {selected_item}")
-    return selected_item
-
-
-def y():
-    print("opening settings...")
-
-
-gui_display.create_start_screen(databases=["movies", "books"], combo_command=x, button_command=y)
-
-main_window.mainloop()
+#main_window = Tk()
+#main_window.title("entertainment recommendations")
+#main_window.state("zoomed")
+#main_window.config(bg="white")
+#
+#gui_display = WindowManager(root_window=main_window)
+#
+#
+#def x(event) -> str:
+#    selected_item = event.widget.get()
+#    print(f"Selected item: {selected_item}")
+#    return selected_item
+#
+#
+#def y():
+#    print("opening settings...")
+#
+#
+#gui_display.create_start_screen(databases=["movies", "books"], combo_command=x, button_command=y)
+#
+#main_window.mainloop()
+#
