@@ -1,7 +1,13 @@
 import numpy as np
-import typing
-import tkinter as tk
-from actors import User
+from typing import Callable, Any
+from tkinter import *
+from tkinter import ttk
+import pandas as pd
+from actors import User, Content
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+
+
 
 class Ratings:
     
@@ -79,17 +85,90 @@ class Ratings:
         print(f"{u_mean}+{best_content[:, 0]}/{denominator}\n{best_content[:, 1]}  {self._contents[best_content[0, 1]]}\n{self._contents[best_content[0, 1]].id}\n")
         print(np.full(len(best_content), u_mean) + best_content[:, 0] / denominator)
         print("\n\n")
-        return np.full(len(best_content), u_mean) + best_content[:, 0] / denominator
+        return np.full(len(best_content), u_mean) + best_content[:, 0] / denominator, self._contents[best_content[0, 1]].title
     
     def content_based_recommendation(self):
-        pass
+        item_features = [self._contents[key].get_characteristic("genre") for key in self._contents]
+        tfidf = TfidfVectorizer(stop_words='english')
+        tfidf_matrix = tfidf.fit_transform(item_features).toarray()
+        print(tfidf_matrix)
+        
 
 
 class WindowManager:
-    
-    def __init__(self, root_window):
+
+    def __init__(self, root_window:Tk):
         self._root_window = root_window
+        self._frames = dict()
     
     def clear(self):
         for frame in self._root_window.winfo_children():
             frame.destroy()
+    
+    def switch_working_window(self):
+        pass
+    
+    def create_start_screen(self, databases: list, combo_command: Callable[[object], str], button_command: Callable[[], Any]):
+        self._frames["login"] = Frame(self._root_window, width=100, height=100, bg='#65A8E1')
+        self._frames["login"].grid(row=0, column=0, padx=5, pady=5)
+        
+        button = Button(self._frames["login"], text="SETTINGS", font=("bold", 12), bg="#88d1b9", width=20, command=button_command)
+        button.grid(row=0, column=1)
+        
+        database_combo = ttk.Combobox(self._frames["login"], values=databases, width=40)
+        database_combo.set("SELECT THE CONTENT YOU WANT")
+        database_combo.grid(row=0, column=0)
+        
+        database_combo.bind("<<ComboboxSelected>>", combo_command)
+        
+    
+    def create_settings_screen(self):
+        pass
+
+
+class AdvanceProgramingProject:
+
+    def __init__(self, window_manager: WindowManager):
+        self._users = []
+        self._content = []
+        self._window_manager = window_manager
+        
+        
+    
+    def start_menu(self):
+        with open("databases.csv", "r") as db_storage:
+            databases = [db for db in db_storage]
+        self._window_manager.create_start_screen(databases=databases, combo_command=self.db_combo_command, button_command=self.settings)
+    
+    def db_combo_command (self, event):
+        selected_item = event.widget.get()
+        return selected_item
+    
+    def login(self, user, database):
+        self.load_movie_users()
+    
+    def settings(self):
+        print("opening settings...")
+    
+    def load_movie_users(self):
+        ratings = pd.read_csv("movies/ratings.csv")
+        user_id = ratings.iloc[:, 0]
+        tmp_lst = []
+        for identifier in user_id:
+            n = 0
+            if identifier not in tmp_lst:
+                self._users.append(User(identifier))
+                tmp_lst.append(identifier)
+    
+    def load_movie_user_ratings(self):
+        ratings = pd.read_csv("movies/ratings.csv")
+        for i, id in enumerate(ratings["userId"]):
+            for user in self._users:
+                if user.id == id:
+                    user.rate_content(content=ratings.iloc[i, 1], rating=ratings.iloc[i, 2])
+    
+    def load_movies(self):
+        movies = pd.read_csv("movies/content.csv")
+        for row in movies.itertuples(index=False, name='Pandas'):
+            self._content.append(Content(id=row.movieId, title=row.title, genres=row.genres))
+
