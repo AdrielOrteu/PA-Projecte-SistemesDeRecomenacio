@@ -22,7 +22,7 @@ class User:
 
 class Content:
     
-    def __init__(self, id, title, rating=0, **characteristics):
+    def __init__(self, id, title, characteristics, rating=0):
         self._id = id
         self._title = title
         self._characteristics = characteristics
@@ -43,7 +43,8 @@ class Content:
     def title(self):
         return self._title
     
-    def get_characteristic(self, characteristic):
-        return self._characteristics.get(characteristic, None)
+    @property
+    def characteristics(self):
+        return self._characteristics
 
 

@@ -155,7 +155,7 @@ class WindowManager:
         
         
 
-#class AdvanceProgramingProject:
+#class MainClass:
 #
 #    def __init__(self, window_manager: WindowManager):
 #        self._users = []
