@@ -1,71 +1,106 @@
 import numpy as np
+import pandas as pd
 from abc import ABC, abstractmethod
-from typing import List, TypeVar, Any
+from typing import List, TypeVar, Any, NoReturn
+from numpy.typing import NDArray
 
 
-class Content (ABC):
-    def __init__(self):
-        self._identifier: str | None = None
-        self._title: str | None = None
-        self._characteristics: dict[str, Any] = {}
-    @property
-    def identifier(self) -> str:
-        if self._identifier is None:
-            raise ValueError("identifier not loaded")
-        return self._identifier
+class GraphicalUserInterface:
+    def __init__(self) -> None:
+        pass
+    
+    def chose_db(self) -> str:
+        print("Witch database do you want to use?\n M -> movies | B -> books")
+        choice = {"M":"movies", "B":"books"}.get(input())
+        return choice
+    
+    def chose_method(self):
+        print("How do you want us to recommend the content?\n S -> simple | L -> collaborative | C -> content")
+        choice = {"S": "simple", "L": "collaborative", "C": "content"}.get(input())
+        return choice
+    
+    # Anabel
 
-    @property
-    def title(self) -> str:
-        if self._title is None:
-            raise ValueError("title not loaded")
-        return self._title
+class Contents (ABC):
+    def __init__(self) -> None:
+        self._contents: list[ tuple [str,str, dict[str, Any] ] ] | None = None
     
     @property
-    def characteristics(self) -> dict[str, Any]:
-        return self._characteristics
+    def contents(self) -> list[ tuple [str,str, dict[str, Any] ] ]:
+        if self._contents is None:
+            raise ValueError("contents are not loaded")
+        return self._contents
+    
+    @property
+    def identifiers(self) -> NDArray[str]:
+        if self._contents is None:
+            raise ValueError("contents are not loaded")
+        return np.array([content[0] for content in self._contents])
+    @property
+    def titles(self) -> NDArray[str]:
+        if self._contents is None:
+            raise ValueError("contents are not loaded")
+        return np.array([content[1] for content in self._contents])
+    
+    @property
+    def characteristics(self) -> NDArray[dict[str, Any]]:
+        if self._contents is None:
+            raise ValueError("contents are not loaded")
+        return np.array([content[2] for content in self._contents])
     
     @abstractmethod
-    def load_content(self):
+    def load_content(self) -> None:
         pass
-C = TypeVar('C', bound=Content)
+C = TypeVar('C', bound=Contents)
 
 
-class Book (Content):
-    def load_content(self):
+class Books (Contents):
+    def load_content(self) -> None:
         pass
     
 
-class Movie (Content):
-    pass
+class Movies (Contents):
+    def load_content(self) -> None:
+        pass
 
-class User (ABC):
-    def __init__(self, identifier):
-        self._identifier = identifier
-        self._ratings = dict()
+class Users (ABC):
+    def __init__(self) -> None:
+        self._users: list[ NDArray[int]] | None = None
+
+
+    def users(self) -> list[ NDArray[int] ]:
+        if self._users is None:
+            raise ValueError("contents are not loaded")
+        return self._users
     
     @property
-    def identifier(self):
-        return self._identifier
-
-class MovieUser(User):
-    
-    
-    @property
-    def identifier(self):
-        return self._identifier
+    def identifier(self) -> NDArray[int]:
+        if self._users in None:
+            raise ValueError("users have not been loaded")
+        return np.array([user[0] for user in self._users])
     
     @property
     def ratings(self):
-        return self._ratings
+        if self._users in None:
+            raise ValueError("users have not been loaded")
+        return np.array([user[1] for user in self._users])
+    
+    @abstractmethod
+    def load_users(self):
+        pass
+
+class MovieUsers(Users):
+    def load_users(self):
+        a = pd.read_csv("")
 
 
 class Rating (ABC):
-    def __init__(self, users: List[User], contents: List[C]):
+    def __init__(self, users: List[Users], contents: List[C]) -> None:
         self._users = {user.identifier: user for user in users}
         self._contents = {content.identifier: content for content in contents}
     
     @abstractmethod
-    def rate(self, user_id):
+    def rate(self, user_id) -> tuple[NDArray[np.float64], NDArray[C]]:
         pass
     
 R = TypeVar('R', bound=Rating)
@@ -74,9 +109,9 @@ class SimpleRating (Rating):
     pass
 
 class CollaborativeRating (Rating):
-    def compute_restricted_u_vectors(self, user_1: User, user_2: User):
-        if not isinstance(user_1, User) or not isinstance(user_2, User):
-            raise TypeError("Both arguments must be instances of User")
+    def compute_restricted_u_vectors(self, user_1: Users, user_2: Users):
+        if not isinstance(user_1, Users) or not isinstance(user_2, Users):
+            raise TypeError("Both arguments must be instances of Users")
         
         u1_ratings = user_1.ratings
         u2_ratings = user_2.ratings
@@ -87,9 +122,9 @@ class CollaborativeRating (Rating):
         
         return v1, v2
     
-    def compute_full_u_vector(self, user_1: User):
-        if not isinstance(user_1, User):
-            raise TypeError("Both arguments must be instances of User")
+    def compute_full_u_vector(self, user_1: Users) -> NDArray[np.float64]:
+        if not isinstance(user_1, Users):
+            raise TypeError("Both arguments must be instances of Users")
         return np.array([user_1.ratings.get(key, 0) for key in self._contents])
     def rate(self, my_id):
         k_nearest = np.zeros((k, 2))
@@ -112,7 +147,7 @@ class CollaborativeRating (Rating):
                     k_nearest = k_nearest[np.argsort(k_nearest[:, 0])]
                     # print(k_nearest)
         
-        k_nearest_ratings = np.stack([compute_full_u_vector(self._users[u[1]]) for u in k_nearest])  # THIS
+        k_nearest_ratings = np.stack([self.compute_full_u_vector(self._users[u[1]]) for u in k_nearest])  # THIS
         
         best_content = np.zeros((2, num_recommendations))
         
@@ -124,7 +159,7 @@ class CollaborativeRating (Rating):
         
         denominator = np.linalg.norm(k_nearest[:, 0], ord=1)
         
-        u_mean = np.mean(compute_full_u_vector(self._users[my_id]))
+        u_mean = np.mean(self.compute_full_u_vector(self._users[my_id]))
         
         for pos, content_id in enumerate(self._contents):
             y = means  # shape (k,)
@@ -140,8 +175,7 @@ class CollaborativeRating (Rating):
             f"{u_mean}+{best_content[:, 0]}/{denominator}\n{best_content[:, 1]}  {self._contents[best_content[0, 1]]}\n{self._contents[best_content[0, 1]].id}\n")
         print(np.full(len(best_content), u_mean) + best_content[:, 0] / denominator)
         print("\n\n")
-        return np.full(len(best_content), u_mean) + best_content[:, 0] / denominator, self._contents[
-            best_content[0, 1]].title
+        return np.full(len(best_content), u_mean) + best_content[:, 0] / denominator, self._contents[best_content[0, 1]].title
 
 class ContentRating (Rating):
     pass

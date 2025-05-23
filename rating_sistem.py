@@ -22,7 +22,7 @@ class Ratings:
     def user_based_recommendation(self, my_id, k, num_recommendations=1):
         def compute_restricted_u_vectors(user_1: User, user_2: User):
             if not isinstance(user_1, User) or not isinstance(user_2, User):
-                raise TypeError("Both arguments must be instances of User")
+                raise TypeError("Both arguments must be instances of Users")
             
             u1_ratings = user_1.ratings
             u2_ratings = user_2.ratings
@@ -35,7 +35,7 @@ class Ratings:
         
         def compute_full_u_vector(user_1: User):
             if not isinstance(user_1, User):
-                raise TypeError("Both arguments must be instances of User")
+                raise TypeError("Both arguments must be instances of Users")
             return np.array([user_1.ratings.get(key,0) for key in self._contents])
         
         k_nearest = np.zeros((k, 2))
@@ -182,24 +182,24 @@ class WindowManager:
 #        print("opening settings...")
 #
 #    def load_movie_users(self):
-#        ratings = pd.read_csv("movies/ratings.csv")
+#        ratings = pd.read_csv("movies/Ratings.csv")
 #        user_id = ratings.iloc[:, 0]
 #        tmp_lst = []
 #        for identifier in user_id:
 #            n = 0
 #            if identifier not in tmp_lst:
-#                self._users.append(User(identifier))
+#                self._users.append(Users(identifier))
 #                tmp_lst.append(identifier)
 #
 #    def load_movie_user_ratings(self):
-#        ratings = pd.read_csv("movies/ratings.csv")
+#        ratings = pd.read_csv("movies/Ratings.csv")
 #        for i, id in enumerate(ratings["userId"]):
 #            for user in self._users:
 #                if user.id == id:
 #                    user.rate_content(content=ratings.iloc[i, 1], rating=ratings.iloc[i, 2])
 #
 #    def load_movies(self):
-#        movies = pd.read_csv("movies/content.csv")
-#        for row in movies.itertuples(index=False, name='Pandas'):
-#            self._content.append(Content(id=row.movieId, title=row.title, genres=row.genres))
+#        movies = pd.read_csv("movies/movies.csv")
+#        for row in movies.iterables(index=False, name='Pandas'):
+#            self._content.append(Contents(id=row.movieId, title=row.title, genres=row.genres))
 
