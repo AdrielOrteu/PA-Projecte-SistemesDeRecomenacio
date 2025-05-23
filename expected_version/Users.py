@@ -63,13 +63,11 @@ class Users(ABC):
     
     @abstractmethod
     def load_users(self):
-        #TEST#
-        print(f"users_type = {type(self._users)}")
-        print(f"user_type = {type(self._users[0])}")
-        print(f"identifier_type = {type(self._users[0][0])}")
-        print(f"ratings_type = {type(self._users[0][1])}")
-        print(f"ratings_KEY_type = {type(next(iter(self._users[0][1])))}")
-        print(f"ratings_VALUE_type = {type( self._users[0][1][next(iter(self._users[0][1]))] )}")
+        pass
+    
+    @abstractmethod
+    def save_users(self):
+        pass
 
 
 class MovieUsers(Users):

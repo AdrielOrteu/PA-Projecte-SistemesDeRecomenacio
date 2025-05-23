@@ -34,7 +34,11 @@ class Contents(ABC):
         return np.array([content[2] for content in self._contents])
     
     @abstractmethod
-    def load_content(self) -> None:
+    def load_contents(self) -> None:
+        pass
+    
+    @abstractmethod
+    def save_contents(self):
         pass
 
 
@@ -42,7 +46,7 @@ C = TypeVar('C', bound=Contents)
 
 
 class Books(Contents):
-    def load_content(self) -> None:
+    def load_contents(self) -> None:
         """Loads the books into the contents attribute"""
         content_df = pd.read_csv("books/Books.csv")
         for book in content_df.iterables(index=False, name='Pandas'):
@@ -54,7 +58,7 @@ class Books(Contents):
 
 
 class Movies(Contents):
-    def load_content(self) -> None:
+    def load_contents(self) -> None:
         """Loads the movies into the contents attribute"""
         movies_df = pd.read_csv("movies/movies.csv")
         for movie in movies_df.iterables(index=False, name='Pandas'):
