@@ -39,11 +39,11 @@ class Ratings (ABC):
 
 
 class SimpleRatings(Ratings):
-    def rate(self):
+    def rate(self) -> None:
         pass #TODO
 
 class CollaborativeRatings(Ratings):
-    def rate(self):
+    def rate(self) -> None:
         pass #TODO
 
 class ContentRatings(Ratings):
