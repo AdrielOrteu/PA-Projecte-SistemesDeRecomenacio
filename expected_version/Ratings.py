@@ -56,9 +56,9 @@ class SimpleRatings(Ratings):
         num_vots = {}
         ratings_global = []
         for content_id, rating in item_ratings.items():
-            if len(rating) >= num_vots: # ??? potential error
+            if len(rating) >= self._parameters["min_votes"]:
                 avg_item[content_id] = np.mean(rating)
-                num_vots = len(rating) # ??? why?
+                num_vots[content_id] = len(rating)
                 for value in rating:
                     ratings_global.append(value)
         
@@ -66,8 +66,8 @@ class SimpleRatings(Ratings):
         final_rating = []
         for content_id in contents.identifiers:
             if content_id not in users.users[self._consumer].ratings and content_id in avg_item:
-                calcul = (num_vots[content_id] / (num_vots[content_id] + self._parameters["min_votes"]) * avg_item[content_id]) + (
-                            self._parameters["min_votes"] / (num_vots[content_id] + self._parameters["min_votes"]) * avg_global)
+                calcul = ((num_vots[content_id] / (num_vots[content_id] + self._parameters["min_votes"]) * avg_item[content_id]) +
+                          (self._parameters["min_votes"] / (num_vots[content_id] + self._parameters["min_votes"]) * avg_global))
                 final_rating.append(calcul)
         
         self._ratings = np.array(final_rating.sort(reverse=True))
