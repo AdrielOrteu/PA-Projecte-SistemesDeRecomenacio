@@ -11,7 +11,7 @@ class Content:
     def __init__(self, identifier: str, title: str, **characteristics) -> None:
         self._identifier : str = identifier
         self._title : str = title
-        self._characteristics : dict[str, Any] = characteristics
+        self._characteristics : dict[str, str] = characteristics
     
     @property
     def identifier(self) -> str:
@@ -28,7 +28,7 @@ class Content:
         self._title = new_title
     
     @property
-    def characteristics(self) -> dict[str, Any]:
+    def characteristics(self) -> dict[str, str]:
         return self._characteristics
 
 
@@ -55,7 +55,7 @@ class Contents(ABC):
         return np.array([self._contents[identifier].title for identifier in self._contents])
     
     @property
-    def characteristics(self) -> NDArray[dict[str, Any]]:
+    def characteristics(self) -> NDArray[dict[str, str]]:
         if self._contents == dict():
             raise ValueError("contents are not loaded")
         return np.array([self._contents[identifier].characteristics for identifier in self._contents])
@@ -95,8 +95,8 @@ class Movies(Contents):
         """
         movies_df = pd.read_csv("movies/movies.csv")
         for movie in movies_df.itertuples(index=False, name='Pandas'):
-            print(movie)
-            self._contents[movie.movieId]= Content(identifier=movie.movieId,title=movie.title, genres=movie.genres)
+            # print(movie)
+            self._contents[movie.movieId] = Content(identifier=movie.movieId,title=movie.title, genres=movie.genres)
     
     def save_contents(self):
         pass #TODO

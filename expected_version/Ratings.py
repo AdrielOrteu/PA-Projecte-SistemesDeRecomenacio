@@ -2,7 +2,7 @@ import numpy as np
 from numpy.typing import NDArray
 from abc import ABC, abstractmethod
 from typing import List, TypeVar, Any, NoReturn
-
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 from Users import Users, User
 from Contents import Contents
@@ -132,5 +132,43 @@ class CollaborativeRatings(Ratings):
 
 
 class ContentRatings(Ratings):
+    def compute_full_u_vector(self, user: User, contents: C):
+        if not isinstance(user, User):
+            raise TypeError("Argument needs to be instance of User")
+        return np.array([user.ratings.get(key, np.float64(0)) for key in contents.contents], dtype=np.float64)
+    def cos_similarity(self, u: NDArray, v: NDArray) -> np.float64:
+        numerator = np.dot(u, v)
+        denominator = np.linalg.norm(u) * np.linalg.norm(v)
+        if denominator == 0:
+            return np.float64(0)
+        return np.float64(numerator/denominator)
     def rate(self, users: U, contents: C) -> None:
-        pass #TODO
+        
+        # === Build TF-IDF matrix ===
+        item_features = [
+            ' '.join(content_characteristics.values())
+            for content_characteristics in contents.characteristics
+        ]
+        tfidf = TfidfVectorizer(stop_words='english')
+        tfidf_matrix = tfidf.fit_transform(item_features).toarray()
+        print(tfidf_matrix)
+        print()
+        p_u = self.compute_full_u_vector(user=users.users[self.consumer], contents=contents)
+        print(p_u)
+        print()
+        profile = p_u[:, np.newaxis] * tfidf_matrix
+        print(profile)
+        profile = profile.sum(axis=0)
+        print(profile)
+
+
+
+
+from Users import *
+from Contents import *
+users = MovieUsers()
+contents = Movies()
+users.load_users()
+contents.load_contents()
+rating_method = ContentRatings(consumer="1")
+rating_method.rate(users=users, contents=contents)
