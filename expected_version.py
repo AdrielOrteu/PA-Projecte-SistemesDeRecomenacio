@@ -95,18 +95,66 @@ class MovieUsers(Users):
 
 
 class Rating (ABC):
-    def __init__(self, users: List[Users], contents: List[C]) -> None:
+    def __init__(self, users: List[Users], contents: List[C], *kwargs) -> None:
         self._users = {user.identifier: user for user in users}
         self._contents = {content.identifier: content for content in contents}
+        self.recommendations: NDArray[np.int_] = np.empty()
+        self._ratings: NDArray[np.float64] = np.empty()
+        self.parameters: Dict[str, Any] = kwargs
+        
+    @property
+    def consumer(self) -> int:
+        return self._consumer
     
+    @consumer.setter
+    def consumer(self, consumer_id: int) -> None:
+        self._consumer = consumer_id
+        
     @abstractmethod
-    def rate(self, user_id) -> tuple[NDArray[np.float64], NDArray[C]]:
+    def rate(self, user: Users, content: C) -> tuple[NDArray[np.float64], NDArray[C]]:
+        
         pass
+    
+    @property
+    def recommendations(self) -> NDArray[np.int_]:
+        
+        return self._recommendation
+   
+    @property
+    def ratings(self) -> NDArray[np.float64]:
+        
+        return self._ratings
     
 R = TypeVar('R', bound=Rating)
 
 class SimpleRating (Rating):
-    pass
+    def simple_rating(self, min_vots):
+        item_ratings = {}
+        for content_id in self._Content:
+            item_ratings[content_id] = []
+            
+        for user in self._users.values():
+            for content_id, rating in user.ratings.items():
+                item_ratings[content_id].append(rating)
+        avg_item = {}
+        num_vots = {}
+        ratings_global = []
+        for content_id, rating in item_ratings.items():
+            if len(rating) >= num_vots:
+                avg_item[content_id] = np.mean(rating)
+                num_vots = len(rating)
+                for value in rating:
+                    ratings_global.append(value)
+                    
+        avg_global = np.mean(ratings_global)
+        final_rating = []
+        for content_id in self._contents:
+            if content_id not in user.ratings and content_id in avg_item:
+                calcul = (num_vots[content_id]/(num_vots[content_id]+min_vots)*avg_item(content_id)) + (min_vots/(num_vots[content_id]+min_vots)*avg_global)
+                final_rating.append(calcul)
+                
+        final_rating.sort(reverse=True)
+        return (final_rating[:5])
 
 class CollaborativeRating (Rating):
     def compute_restricted_u_vectors(self, user_1: Users, user_2: Users):
