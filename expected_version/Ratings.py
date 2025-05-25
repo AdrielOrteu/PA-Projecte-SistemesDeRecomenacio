@@ -1,13 +1,9 @@
 import numpy as np
-from numpy.typing import NDArray
+import pandas as pd
 from abc import ABC, abstractmethod
 from typing import List, TypeVar, Any, NoReturn
-
-
-from Users import Users, User
-from Contents import Contents
-U = TypeVar('U', bound=Users)
-C = TypeVar('C', bound=Contents)
+from numpy.typing import NDArray
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 class Ratings (ABC):
@@ -41,9 +37,13 @@ class Ratings (ABC):
     @abstractmethod
     def rate(self, users: U, contents: C) -> None:
         pass
+   
+    @abstractmethod
+    def prediction_rate(self, user: users, content: C) -> tuple[NDArray[np.float64], NDArray[C]]:
+        
+        pass
 
-
-class SimpleRatings(Ratings):
+class SimpleRating (Ratings):
     def rate(self, users: U, contents: C) -> None:
         item_ratings = {}
         for content_id in contents.identifiers:
@@ -72,8 +72,33 @@ class SimpleRatings(Ratings):
         
         self._ratings = np.array(final_rating.sort(reverse=True))
         
-
-
+    def prediction_rate(self, users: U, contents: C) -> None:
+        item_ratings = {}
+        for content_id in contents.identifiers:
+            item_ratings[content_id] = []
+        
+        for user in users.users.values():
+            for content_id, rating in user.ratings.items():
+                item_ratings[content_id].append(rating)
+        avg_item = {}
+        num_vots = {}
+        ratings_global = []
+        for content_id, rating in item_ratings.items():
+            avg_item[content_id] = np.mean(rating)
+            num_vots[content_id] = len(rating)
+            for value in rating:
+                ratings_global.append(value)
+        
+        avg_global = np.mean(ratings_global)
+        final_rating = []
+        for content_id in contents.identifiers:
+            if content_id in users.users[self._consumer].ratings:
+                calcul = ((num_vots[content_id] / (num_vots[content_id] + self._parameters["min_votes"]) * avg_item[content_id]) +
+                          (self._parameters["min_votes"] / (num_vots[content_id] + self._parameters["min_votes"]) * avg_global))
+                final_rating.append(calcul)
+        
+        self._ratings = np.array(final_rating.sort(reverse=True))
+        
 class CollaborativeRatings(Ratings):
     def compute_restricted_u_vector(self, user_1: User, user_2: User):
         if not isinstance(user_1, User) or not isinstance(user_2, User):
@@ -130,7 +155,56 @@ class CollaborativeRatings(Ratings):
             self._ratings = self._ratings[sorting]
             self._recommendations = self._recommendations[sorting]
 
+    
+    def prediction_rate(self, users: U, contents: C) -> None:
+        k = self._parameters["k"]
+        n = len(contents.contents)
+        k_nearest_u = np.zeros(k, dtype=str)
+        k_nearest_s = np.zeros(k, dtype=np.float64)
+        k_nearest_v = np.zeros((k,n), dtype=np.float64)
+        
+        u1_vector = self.compute_full_u_vector(user=users.users[self.consumer], contents=contents)
+        norm1 = np.linalg.norm(u1_vector)
+        for user_id  in users.identifier:
+            if user_id != self.consumer:
+                # u1_vector, u2_vector = self.compute_restricted_u_vector(users.users[self.consumer], users.users[user_id])
+                
+                u2_vector = self.compute_full_u_vector(user=users.users[user_id], contents=contents)
+                norm2 = np.linalg.norm(u2_vector)
+                
+                s = np.dot(u1_vector, u2_vector) / (norm1*norm2)
+                if s > k_nearest_s[0]:
+                    k_nearest_s[0] = s
+                    k_nearest_u[0] = user_id
+                    k_nearest_v[0] = u2_vector
+                    sorting = np.argsort(k_nearest_s)
+                    k_nearest_s = k_nearest_s[sorting]
+                    k_nearest_u = k_nearest_u[sorting]
+                    k_nearest_v = k_nearest_v[sorting]
+            
+            denominator = np.linalg.norm(k_nearest_s, ord=1)
+            mu = np.mean(u1_vector)
+            
+            means_u = np.mean(k_nearest_v, axis=1)
+            self._ratings = np.array([mu + np.dot(k_nearest_s, k_nearest_v[:,i]-means_u)/denominator for i in range(n)], dtype=np.float64)
+            self._recommendations = contents.identifiers
+            sorting = np.argsort(self._ratings)
+            self._ratings = self._ratings[sorting]
+            self._recommendations = self._recommendations[sorting]
 
-class ContentRatings(Ratings):
-    def rate(self, users: U, contents: C) -> None:
-        pass #TODO
+
+    
+class ContentRating (Rating):
+    pass
+        
+        
+
+        
+        
+        
+        
+        
+        
+        
+        
+
