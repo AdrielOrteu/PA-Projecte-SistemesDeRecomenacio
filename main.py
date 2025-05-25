@@ -1,55 +1,76 @@
-import pandas as pd
-from tkinter import * # DO LAST
-from rating_sistem import Ratings, WindowManager
-from actors import User, Content
-import numpy as np
+from Interface import GUI
+from Users import MovieUsers, BookUsers
+from Contents import Books, Movies
+from Ratings import SimpleRatings, ContentRatings, CollaborativeRatings
 
 
-users = []
-content = []
+interface = GUI()
+executing = True
+database = None
+users = None
+identity = None
+action = None
+contents = None
+method = None
+ratings = None
 
-def load_users(u):
-    ratings = pd.read_csv("movies/ratings.csv")
-    user_id = ratings.iloc[:, 0]
-    tmp_lst = []
-    for identifier in user_id:
-        n=0
-        if identifier not in tmp_lst:
-            u.append( User(identifier) )
-            tmp_lst.append(identifier)
-
-
-
-
-
-
-#load_users(users)
-#load_movies(content)
-#load_user_ratings(users)
-
-#recommender = Ratings(users=users, contents=content)
-
-#print(recommender.user_based_recommendation(my_id=1, k=10))
-
-#main_window = Tk()
-#main_window.title("entertainment recommendations")
-#main_window.state("zoomed")
-#main_window.config(bg="white")
-#
-#gui_display = WindowManager(root_window=main_window)
-#
-#
-#def x(event) -> str:
-#    selected_item = event.widget.get()
-#    print(f"Selected item: {selected_item}")
-#    return selected_item
-#
-#
-#def y():
-#    print("opening settings...")
-#
-#
-#gui_display.create_start_screen(databases=["movies", "books"], combo_command=x, button_command=y)
-#
-#main_window.mainloop()
-#
+while executing:
+    if database is None:
+        database = GUI.chose_db()
+        
+        if database == "movies":
+            users = MovieUsers()
+            contents = Movies()
+        else:
+            users = BookUsers()
+            contents = Books()
+        
+        # TODO Make else catch errors
+        
+        users.load_users()
+        contents.load_contents()
+    
+    if identity not in users.users.keys():
+        identity = GUI.chose_identity()
+        while identity not in users.users.keys() and not ( identity == "B" ) :
+            identity = GUI.chose_identity()
+    if identity == "B":
+        database = None
+        users = None
+        identity = None
+        action = None
+        continue
+    else:
+        pass
+    
+    if action is None:
+        action = GUI.chose_action()
+    
+    if action == "back":
+        identity = None
+        action = None
+        continue
+        
+    elif action == "exit":
+        executing = False
+        continue
+    elif action == "recommend":
+        if method is None:
+            method = GUI.chose_method()
+        
+        if method == "simple":
+            ratings = SimpleRatings(consumer=identity)
+        elif method == "collaborative":
+            ratings = CollaborativeRatings(consumer=identity)
+        else:
+            ratings = ContentRatings(consumer=identity)
+        
+        ratings.rate(users=users, contents=contents)
+        print(f"{ratings.recommendations}\n{ratings.ratings}")
+        
+        for i in range(-5, 0):
+            print(contents.contents[ratings.recommendations[i]])
+        action = None
+        method = None
+    elif action == "evaluate":
+        pass

@@ -1,9 +1,5 @@
-from calendar import month
-
 import numpy as np
-from rating_sistem import Ratings
-from actors import User, Content
-from main import load_users, load_user_ratings, load_movies
+from FailedAttempts.v1.main_v1 import load_users, load_movies
 
 arr = np.array([52,5,36,2,7,238,9,3,654,1,33,6,4,15,95,2])
 print(arr)
