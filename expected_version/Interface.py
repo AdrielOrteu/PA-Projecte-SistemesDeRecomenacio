@@ -1,0 +1,28 @@
+from typing import Callable
+from numpy.typing import NDArray
+
+class GUI:
+    def __init__(self) -> None:
+        pass
+    
+    def chose_db(self) -> str:
+        print("Witch database do you want to use?\n M -> movies | B -> books")
+        choice = {"M": "movies", "B": "books"}.get(input())
+        return choice # after the
+    
+    def chose_identity(self) -> str:
+        choice = input("Enter your user id (or B to go back):\n")
+        return choice
+    
+    def chose_action(self) -> str:
+        print("What do you want to do?\n R -> Recommend (best 5 items) | E -> Evaluate | B -> Back | X -> Exit")
+        choice = {"R":"recommend", "E":"evaluate", "B": "Back", "X": "exit"}.get(input())
+        return choice
+    
+    def chose_simple_params(self):
+        pass
+    
+    def chose_method(self) -> Callable[[], NDArray[str]]:
+        print("How do you want us to recommend the content?\n S -> simple | L -> collaborative | C -> content")
+        choice = {"S": self.chose_simple_params, "L": "collaborative", "C": "content"}.get(input())
+        return choice

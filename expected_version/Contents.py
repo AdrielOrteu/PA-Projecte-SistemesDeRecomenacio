@@ -67,23 +67,21 @@ class Contents(ABC):
     @abstractmethod
     def save_contents(self):
         pass
-    
-
-
-
-C = TypeVar('C', bound=Contents)
 
 
 class Books(Contents):
     def load_contents(self) -> None:
-        """Loads the books into the contents attribute"""
+        """
+        Loads the books into the contents attribute
+        Loads the id, title, author, YearOfPublication, publisher
+        """
         content_df = pd.read_csv("books/Books.csv")
         for book in content_df.itertuples(index=False, name='Pandas'):
             print(f"TITLE\nvalue={book.BookTitle} | type={type(book.BookTitle)}")
-            int_identifier = int(book.ISBN)
-            print(f"IDENTIFIER\nvalue={int_identifier} | type={type(int_identifier)}")
+            print(f"IDENTIFIER\nvalue={book.ISBN} | type={type(book.ISBN)}")
             print()
-            self._contents[int_identifier] = Content(identifier=int_identifier, title=book.BookTitle, BookAuthor=book.BookAuthor, YearOfPublication=book.YearOfPublication, Publisher=book.Publisher)
+            self._contents[book.ISBN] = Content(identifier=book.ISBN, title=book.BookTitle, BookAuthor=book.BookAuthor,
+                                                YearOfPublication=book.YearOfPublication, Publisher=book.Publisher)
         #print(self._contents)
     def save_contents(self):
         pass #TODO
@@ -91,13 +89,14 @@ class Books(Contents):
 
 class Movies(Contents):
     def load_contents(self) -> None:
-        """Loads the movies into the contents attribute"""
+        """
+        Loads the movies into the contents attribute
+        Loads the id, title, genres
+        """
         movies_df = pd.read_csv("movies/movies.csv")
         for movie in movies_df.itertuples(index=False, name='Pandas'):
-            self._contents.append((movie.movieId, movie.title, {"genres":movie.genres}))
+            print(movie)
+            self._contents[movie.movieId]= Content(identifier=movie.movieId,title=movie.title, genres=movie.genres)
     
     def save_contents(self):
         pass #TODO
-
-a = Books()
-a.load_contents()

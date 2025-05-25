@@ -6,16 +6,16 @@ import typing
 from typing import List, TypeVar, Any, NoReturn
 
 class User:
-    def __init__(self, identifier:int):
+    def __init__(self, identifier:str):
         self._identifier = identifier
-        self._ratings: dict[int, np.float64] = {}
+        self._ratings: dict[str, np.float64] = {}
     
     @property
     def identifier(self):
         return self._identifier
     
     @identifier.setter
-    def identifier(self, new_identifier: int):
+    def identifier(self, new_identifier: str):
         self._identifier = new_identifier
     
     @property
@@ -25,7 +25,7 @@ class User:
         return self._ratings
     
     @ratings.setter
-    def ratings(self, new_ratings: dict[int, np.float64]):
+    def ratings(self, new_ratings: dict[str, np.float64]):
         self._ratings = new_ratings
 
 class Users(ABC):
@@ -41,25 +41,24 @@ class Users(ABC):
     Example structure:
         [("user1", {"contentA": 5, "contentB": 3}), ("user2", {"contentA": 4})] *WRONG STRUCTURE!*
     """
-        self._users: list[User] | None = None
-        self.load_users()
+        self._users: dict[str, User] = {}
     
-    def users(self) -> list[tuple[int, dict[str, int]]]:
+    def users(self) -> dict[str, User]:
         if self._users is None:
             raise ValueError("contents are not loaded")
         return self._users
     
     @property
-    def identifier(self) -> NDArray[int]:
+    def identifier(self) -> NDArray[str]:
         if self._users in None:
             raise ValueError("users have not been loaded")
-        return np.array([user[0] for user in self._users])
+        return np.array([identifier for identifier in self._users])
     
     @property
-    def ratings(self):
+    def ratings(self) -> NDArray[np.float64]:
         if self._users in None:
             raise ValueError("users have not been loaded")
-        return np.array([user[1] for user in self._users])
+        return np.array([self._users[identifier].ratings for identifier in self._users])
     
     @abstractmethod
     def load_users(self):
@@ -70,16 +69,21 @@ class Users(ABC):
         pass
 
 
+class BookUsers(Users):
+    def load_users(self):
+        pass #TODO
+    
+    def save_users(self):
+        pass #TODO
+
+
 class MovieUsers(Users):
     def load_users(self):
         ratings_db = pd.read_csv("movies/ratings.csv")
         user_id = ratings_db.iloc[:, 0]
         for identifier in user_id:
-            self._users.append(identifier)
-        super().load_users()
-    
-    def load_rating(self):
-        ratings_db = pd.read_csv("movies/ratings.csv")
+            self._users[identifier] = User(identifier=identifier)
+        
         for i, identifier in enumerate(ratings_db["userId"]):
                 for user in self._users:
                     # noinspection SpellCheckingInspection
@@ -88,6 +92,9 @@ class MovieUsers(Users):
                         # [ratings_db.iloc[i, 1]] defines the key of the new rating to be the movie identifier
                         # ratings_db.iloc[i, 2] is the value of the rating
                         user[1][ratings_db.iloc[i, 1]] = ratings_db.iloc[i, 2]
-                    
-        
-# .rate_content(content=ratings_db.iloc[i, 1], rating=ratings_db.iloc[i, 2])
+    
+    def save_users(self):
+        pass
+
+a = MovieUsers()
+a.load_users()
