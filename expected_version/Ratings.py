@@ -236,16 +236,3 @@ class ContentRatings(Ratings):
     
     def prediction_rate(self, user: U, content: C) -> tuple[NDArray[np.float64], NDArray[C]]:
         pass
-
-
-
-
-
-from Users import *
-from Contents import *
-users = MovieUsers()
-contents = Movies()
-users.load_users()
-contents.load_contents()
-rating_method = ContentRatings(consumer="1", max=5)
-rating_method.rate(users=users, contents=contents)

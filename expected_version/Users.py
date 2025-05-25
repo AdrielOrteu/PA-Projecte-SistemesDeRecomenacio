@@ -65,16 +65,10 @@ class Users(ABC):
     def load_users(self):
         pass
     
-    @abstractmethod
-    def save_users(self):
-        pass
 
 
 class BookUsers(Users):
     def load_users(self):
-        pass #TODO
-    
-    def save_users(self):
         pass #TODO
 
 
@@ -94,6 +88,3 @@ class MovieUsers(Users):
                         # [ratings_db.iloc[i, 1]] defines the key of the new rating to be the movie identifier
                         # ratings_db.iloc[i, 2] is the value of the rating
                         self._users[user_id].ratings[ratings_db.iloc[i, 1]] = ratings_db.iloc[i, 2]
-    
-    def save_users(self):
-        pass
