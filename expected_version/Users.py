@@ -19,8 +19,8 @@ class User:
         self._identifier = new_identifier
     
     @property
-    def ratings(self):
-        if self._ratings is None:
+    def ratings(self) -> dict[str, np.float64]:
+        if self._ratings == {}:
             raise ValueError("ratings hasn't been loaded/filled yet")
         return self._ratings
     
@@ -43,6 +43,7 @@ class Users(ABC):
     """
         self._users: dict[str, User] = {}
     
+    @property
     def users(self) -> dict[str, User]:
         if self._users is None:
             raise ValueError("contents are not loaded")
@@ -82,19 +83,17 @@ class MovieUsers(Users):
         ratings_db = pd.read_csv("movies/ratings.csv")
         user_id = ratings_db.iloc[:, 0]
         for identifier in user_id:
-            self._users[identifier] = User(identifier=identifier)
-        
+            self._users[str(identifier)] = User(identifier=str(identifier))
+        print(self._users)
         for i, identifier in enumerate(ratings_db["userId"]):
-                for user in self._users:
+                for user_id in self._users:
                     # noinspection SpellCheckingInspection
-                    if user[0] == identifier:
+                    # print(user_id)
+                    if user_id == str(identifier):
                         # user[1] is the dictionary of ratings
                         # [ratings_db.iloc[i, 1]] defines the key of the new rating to be the movie identifier
                         # ratings_db.iloc[i, 2] is the value of the rating
-                        user[1][ratings_db.iloc[i, 1]] = ratings_db.iloc[i, 2]
+                        self._users[user_id].ratings[ratings_db.iloc[i, 1]] = ratings_db.iloc[i, 2]
     
     def save_users(self):
         pass
-
-a = MovieUsers()
-a.load_users()

@@ -46,7 +46,7 @@ class Contents(ABC):
     def identifiers(self) -> NDArray[str]:
         if self._contents == dict():
             raise ValueError("contents are not loaded")
-        return np.array([identifier for identifier in self._contents])
+        return np.array(self._contents.keys())
     
     @property
     def titles(self) -> NDArray[str]:

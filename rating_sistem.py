@@ -60,8 +60,6 @@ class Ratings:
         
         k_nearest_ratings = np.stack([compute_full_u_vector(self._users[u[1]]) for u in k_nearest]) # THIS
         
-        best_content = np.zeros((2,num_recommendations))
-        
         # Get mean rating vector of each nearest user
         means = np.mean(k_nearest_ratings, axis=1)  # shape: (k,)
         
