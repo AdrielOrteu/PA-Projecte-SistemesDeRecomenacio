@@ -45,8 +45,7 @@ class Ratings (ABC):
         pass
    
     @abstractmethod
-    def prediction_rate(self, user: users, content: C) -> tuple[NDArray[np.float64], NDArray[C]]:
-        
+    def prediction_rate(self, user: U, content: C) -> tuple[NDArray[np.float64], NDArray[C]]:
         pass
 
 
@@ -200,23 +199,6 @@ class CollaborativeRatings(Ratings):
             self._recommendations = self._recommendations[sorting]
 
 
-    
-class ContentRating (Rating):
-    pass
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-
-
-
 class ContentRatings(Ratings):
     def compute_full_u_vector(self, user: User, contents: C):
         if not isinstance(user, User):
@@ -237,36 +219,23 @@ class ContentRatings(Ratings):
         ]
         tfidf = TfidfVectorizer(stop_words='english')
         tfidf_matrix = tfidf.fit_transform(item_features).toarray()
-        print(tfidf_matrix)
-        print(tfidf_matrix.shape)
-        print()
         p_u = self.compute_full_u_vector(user=users.users[self.consumer], contents=contents)
-        print(p_u)
-        print()
         profile = p_u[:, np.newaxis] * tfidf_matrix
-        print(profile)
         profile = profile.sum(axis=0)
-        print(profile)
         profile = profile / p_u.sum()
-        print(profile)
-        print(profile.shape)
+
         
         similarities = tfidf_matrix @ profile
-        print(type(similarities))
-        print(similarities.shape)
+
         similarities = similarities * self._parameters["max"]
         self._recommendations = contents.identifiers
         self._ratings = similarities
         sorting = np.argsort(similarities)
         self._ratings = self._ratings[sorting]
-        print(self._ratings, self._ratings.shape)
-        
-        print(self.recommendations, type(self.recommendations), self.recommendations.shape)
         self._recommendations = self._recommendations[sorting]
-        print(self._recommendations, self._recommendations.shape)
-        print(f"\n\n")
-        print(self._recommendations, self._recommendations.shape)
-        print(self._ratings, self._ratings.shape)
+    
+    def prediction_rate(self, user: U, content: C) -> tuple[NDArray[np.float64], NDArray[C]]:
+        pass
 
 
 
