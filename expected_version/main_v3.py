@@ -2,7 +2,20 @@ from Interface import GUI
 from Contents import Movies, Books
 from Users import MovieUsers
 from Ratings import SimpleRatings, CollaborativeRatings, ContentRatings
+import pickle
 
+def save_pickle(rating, dataset, objecte):
+    """Guarda un objecte en un arxiu pickle """
+    nom_fitxer = f"recommender_{dataset}_{rating}.dat"
+    with open(nom_fitxer, 'wb') as fitxer:
+        pickle.dump(objecte, fitxer)
+
+def recover_pickle(rating, dataset):
+    """Recupera un objecte d'un arxiu pickle"""
+    nom_fitxer = f"recommender_{dataset}_{rating}.dat"
+    with open(nom_fitxer, 'rb') as fitxer:
+        r = pickle.load(fitxer)
+    return r
 
 interface = GUI()
 executing = True
