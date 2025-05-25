@@ -152,6 +152,7 @@ class ContentRatings(Ratings):
         tfidf = TfidfVectorizer(stop_words='english')
         tfidf_matrix = tfidf.fit_transform(item_features).toarray()
         print(tfidf_matrix)
+        print(tfidf_matrix.shape)
         print()
         p_u = self.compute_full_u_vector(user=users.users[self.consumer], contents=contents)
         print(p_u)
@@ -160,6 +161,27 @@ class ContentRatings(Ratings):
         print(profile)
         profile = profile.sum(axis=0)
         print(profile)
+        profile = profile / p_u.sum()
+        print(profile)
+        print(profile.shape)
+        
+        similarities = tfidf_matrix @ profile
+        print(type(similarities))
+        print(similarities.shape)
+        similarities = similarities * self._parameters["max"]
+        self._recommendations = contents.identifiers
+        self._ratings = similarities
+        sorting = np.argsort(similarities)
+        self._ratings = self._ratings[sorting]
+        print(self._ratings, self._ratings.shape)
+        
+        print(self.recommendations, type(self.recommendations), self.recommendations.shape)
+        self._recommendations = self._recommendations[sorting]
+        print(self._recommendations, self._recommendations.shape)
+        print(f"\n\n")
+        print(self._recommendations, self._recommendations.shape)
+        print(self._ratings, self._ratings.shape)
+
 
 
 
@@ -170,5 +192,5 @@ users = MovieUsers()
 contents = Movies()
 users.load_users()
 contents.load_contents()
-rating_method = ContentRatings(consumer="1")
+rating_method = ContentRatings(consumer="1", max=5)
 rating_method.rate(users=users, contents=contents)
